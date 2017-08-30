@@ -163,9 +163,9 @@ public class MachOUnit extends AbstractBinaryUnit implements ICodeObjectUnit, II
         }
         if(targetType != null) {
             target = getUnitProcessor().process(getName(), new BytesInput(processImage), this, targetType, true);
-            /*if(target != null) {
-                reparseUnits.add(target);
-            }*/
+            if(target != null) {
+                addChild(target);
+            }
         }
 
         // Perform the soft delegation of each section
@@ -173,9 +173,9 @@ public class MachOUnit extends AbstractBinaryUnit implements ICodeObjectUnit, II
             if(header.getSection() != null) {
                 try {
                     target = getUnitProcessor().process(header.getName(), new BytesInput(header.getSection().getBytes()), this, null, true);
-                    /*if(target != null) {
-                        reparseUnits.add(target);
-                    }*/
+                    if(target != null) {
+                        addChild(target);
+                    }
                 }
                 catch(Exception e) {
                     logger.info("%s", e.getMessage());
