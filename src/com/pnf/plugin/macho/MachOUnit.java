@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.pnf.plugin.macho;
 
 import java.io.IOException;
@@ -24,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.pnf.plugin.macho.internal.ELF.*;
+import static com.pnf.plugin.macho.internal.MachO.*;
 
-import com.pnf.plugin.macho.internal.ELFFile;
+import com.pnf.plugin.macho.internal.MachOFile;
 import com.pnf.plugin.macho.internal.Header;
 import com.pnf.plugin.macho.internal.ProgramHeader;
 import com.pnf.plugin.macho.internal.SectionHeader;
@@ -48,6 +47,7 @@ import com.pnfsoftware.jeb.core.units.AbstractBinaryUnit;
 import com.pnfsoftware.jeb.core.units.IInteractiveUnit;
 import com.pnfsoftware.jeb.core.units.IMetadataManager;
 import com.pnfsoftware.jeb.core.units.IUnit;
+import com.pnfsoftware.jeb.core.units.IUnitNotification;
 import com.pnfsoftware.jeb.core.units.IUnitProcessor;
 import com.pnfsoftware.jeb.core.units.code.asm.memory.IVirtualMemory;
 import com.pnfsoftware.jeb.core.units.codeobject.ICodeObjectUnit;
@@ -56,43 +56,38 @@ import com.pnfsoftware.jeb.core.units.codeobject.ISegmentInformation;
 import com.pnfsoftware.jeb.core.units.codeobject.ISymbolInformation;
 import com.pnfsoftware.jeb.core.units.codeobject.SymbolInformation;
 import com.pnfsoftware.jeb.core.units.codeobject.SymbolType;
-import com.pnfsoftware.jeb.util.io.IO;
+import com.pnfsoftware.jeb.util.io.*;
 import com.pnfsoftware.jeb.util.logging.GlobalLog;
 import com.pnfsoftware.jeb.util.logging.ILogger;
 
-public class ELFUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInteractiveUnit {
-    private static final ILogger logger = GlobalLog.getLogger(ELFUnit.class);
-    private ELFFile elf;
+public class MachOUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInteractiveUnit {
+
+    private static final ILogger logger = GlobalLog.getLogger(MachOUnit.class);
+    private MachOFile elf;
     private List<ISymbolInformation> symbols;
-    private List<ELFSectionInfo> sections;
-    private List<ELFSectionInfo> segments;
+    private List<MachOSectionInfo> sections;
+    private List<MachOSectionInfo> segments;
     @SuppressWarnings("unused")
-    private ELFLoaderInformation loaderInfo;
+    private MachOLoaderInformation loaderInfo;
     private byte[] data;
 
-    public ELFUnit(String name, IInput input, IUnitProcessor unitProcessor, IUnitCreator parent, IPropertyDefinitionManager pdm) {
-        super(null, input, ELFPlugin.TYPE, name, unitProcessor, parent, pdm);
-        try(InputStream stream = input.getStream()) {
+    public MachOUnit(String name, IInput input, IUnitProcessor unitProcessor, IUnitCreator parent, IPropertyDefinitionManager pdm) {
+        super(null, input, MachOPlugin.TYPE, name, unitProcessor, parent, pdm);
+        try (InputStream stream = input.getStream()) {
             data = IO.readInputStream(stream);
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             logger.catching(e);
         }
     }
 
     @Override
-    public String getStatus() {
-        return status;
-    }
-
-    @Override
     public boolean process() {
-        if(processed) {
+        if (isProcessed()) {
             return true;
         }
         
-        status = "Unprocessed";
-        elf = new ELFFile(data);
+        setStatus("Unprocessed");
+        elf = new MachOFile(data);
         symbols = new ArrayList<>();
         sections = new ArrayList<>();
         segments = new ArrayList<>();
@@ -123,17 +118,18 @@ public class ELFUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInt
                             (long)entry.getValue(), entry.getSize()));
                 }
             }
-            // sections.add(new ELFSectionInfo(header));
+            // sections.add(new MachOSectionInfo(header));
             if((header.getFlags() & SHF_ALLOC) != 0) {
-                sections.add(new ELFSectionInfo(header));
+                sections.add(new MachOSectionInfo(header));
             }
         }
         for(ProgramHeader header : elf.getProgramHeaderTable().getHeaders()) {
             if((header.getType() & PT_LOAD) != 0 && header.getSizeInMemory() > 0) {
-                segments.add(new ELFSectionInfo(header));
+                segments.add(new MachOSectionInfo(header));
             }
         }
-        notifications.addAll(elf.getNotifications());
+        addNotification((IUnitNotification) elf.getNotifications());
+
         byte[] processImage;
         long minAddr = Long.MAX_VALUE;
         long maxAddr = Long.MIN_VALUE;
@@ -155,7 +151,7 @@ public class ELFUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInt
                         (int)segment.getSizeInFile());
             }
         }
-        loaderInfo = new ELFLoaderInformation(elf);
+        loaderInfo = new MachOLoaderInformation(elf);
         IUnit target = null;
         String targetType;
         switch(elf.getArch()) {
@@ -166,33 +162,33 @@ public class ELFUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInt
             targetType = null;
         }
         if(targetType != null) {
-            target = unitProcessor.process(name, new BytesInput(processImage), this, targetType, true);
-            if(target != null) {
+            target = getUnitProcessor().process(getName(), new BytesInput(processImage), this, targetType, true);
+            /*if(target != null) {
                 reparseUnits.add(target);
-            }
+            }*/
         }
 
         // Perform the soft delegation of each section
         for(SectionHeader header : elf.getSectionHeaderTable().getHeaders()) {
             if(header.getSection() != null) {
                 try {
-                    target = unitProcessor.process(header.getName(), new BytesInput(header.getSection().getBytes()), this, null, true);
-                    if(target != null) {
+                    target = getUnitProcessor().process(header.getName(), new BytesInput(header.getSection().getBytes()), this, null, true);
+                    /*if(target != null) {
                         reparseUnits.add(target);
-                    }
+                    }*/
                 }
                 catch(Exception e) {
                     logger.info("%s", e.getMessage());
-                    status = "Error:" + e.getMessage();
+                    setStatus("Error:" + e.getMessage());
                 }
             }
         }
-        processed = true;
-        status = "Processed";
+        setStatus("Processed");
+        setProcessed(true);
         return true;
     }
 
-    public ELFFile getElf() {
+    public MachOFile getElf() {
         return elf;
     }
 
@@ -208,16 +204,16 @@ public class ELFUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInt
 
     @Override
     public ILoaderInformation getLoaderInformation() {
-        return new ELFLoaderInformation(elf);
+        return new MachOLoaderInformation(elf);
     }
 
     @Override
-    public List<ELFSectionInfo> getSections() {
+    public List<MachOSectionInfo> getSections() {
         return sections;
     }
 
     @Override
-    public List<ELFSectionInfo> getSegments() {
+    public List<MachOSectionInfo> getSegments() {
         return segments;
     }
 
@@ -226,7 +222,7 @@ public class ELFUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInt
         StringBuilder desc = new StringBuilder();
         Header header = elf.getHeader();
 
-        desc.append("ELF Header:\n");
+        desc.append("Mach-O Header:\n");
         desc.append(String.format("%-40s%-20s\n", "Magic:", header.getMagicString()));
         desc.append(String.format("%-40s%-20s\n", "Class:", header.getClassString()));
         desc.append(String.format("%-40s%-20s\n", "Data:", header.getDataString()));
@@ -266,61 +262,61 @@ public class ELFUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInt
                 return new ProgramHeaderTableDocument(elf.getProgramHeaderTable());
             }
         });
-        for(SectionHeader section : sectionHeaders) {
+        for (SectionHeader section : sectionHeaders) {
             final SectionHeader section0 = section;
-            switch(section.getType()) {
-            case SHT_STRTAB:
-                formatter.addDocumentPresentation(new AbstractUnitRepresentation(section.getName(), false) {
-                    @Override
-                    public IGenericDocument getDocument() {
-                        return new StringTableDocument(section0);
-                    }
-                });
-                break;
-            /*
+            switch (section.getType()) {
+                case SHT_STRTAB:
+                    formatter.addDocumentPresentation(new AbstractUnitRepresentation(section.getName(), false) {
+                        @Override
+                        public IGenericDocument getDocument() {
+                            return new StringTableDocument(section0);
+                        }
+                    });
+                    break;
+                /*
              * Can't see this info being useful case SHT_HASH:
              * formatter.addDocumentPresentation(new
              * AbstractUnitRepresentation(section.getName(), false) {
              * 
              * @Override public IGenericDocument getDocument() { return new
              * HashTableDocument(section0); } }); break;
-             */
-            case SHT_NOTE:
-                formatter.addDocumentPresentation(new AbstractUnitRepresentation(section.getName(), false) {
-                    @Override
-                    public IGenericDocument getDocument() {
-                        return new NotesDocument(section0);
-                    }
-                });
-                break;
+                 */
+                case SHT_NOTE:
+                    formatter.addDocumentPresentation(new AbstractUnitRepresentation(section.getName(), false) {
+                        @Override
+                        public IGenericDocument getDocument() {
+                            return new NotesDocument(section0);
+                        }
+                    });
+                    break;
 
-            case SHT_DYNSYM:
-            case SHT_SYMTAB:
-                formatter.addDocumentPresentation(new AbstractUnitRepresentation(section.getName(), false) {
-                    @Override
-                    public IGenericDocument getDocument() {
-                        return new SymbolTableDocument(section0);
-                    }
-                });
-                break;
-            case SHT_DYNAMIC:
-                formatter.addDocumentPresentation(new AbstractUnitRepresentation(section.getName(), false) {
-                    @Override
-                    public IGenericDocument getDocument() {
-                        return new DynamicSectionDocument(section0);
-                    }
-                });
-                break;
-            /*
+                case SHT_DYNSYM:
+                case SHT_SYMTAB:
+                    formatter.addDocumentPresentation(new AbstractUnitRepresentation(section.getName(), false) {
+                        @Override
+                        public IGenericDocument getDocument() {
+                            return new SymbolTableDocument(section0);
+                        }
+                    });
+                    break;
+                case SHT_DYNAMIC:
+                    formatter.addDocumentPresentation(new AbstractUnitRepresentation(section.getName(), false) {
+                        @Override
+                        public IGenericDocument getDocument() {
+                            return new DynamicSectionDocument(section0);
+                        }
+                    });
+                    break;
+                /*
              * Not useful to display yet case SHT_RELA: case SHT_REL:
              * formatter.addDocumentPresentation(new
              * AbstractUnitRepresentation(section.getName(), false) {
              * 
              * @Override public IGenericDocument getDocument() { return new
              * RelocationSectionDocument(section0); } }); break;
-             */
-            default:
-                break;
+                 */
+                default:
+                    break;
             }
         }
 
@@ -400,19 +396,20 @@ public class ELFUnit extends AbstractBinaryUnit implements ICodeObjectUnit, IInt
 
     @Override
     public String locationToAddress(IInputLocation location) {
-        if(!(location instanceof FileInputLocation)) {
+        if (!(location instanceof FileInputLocation)) {
             throw new IllegalArgumentException("Unrecognized IInputLocationInformation implementor");
         }
-        return "" + ((FileInputLocation)location).getOffset();
+        return "" + ((FileInputLocation) location).getOffset();
     }
 
     @Override
     public IInputLocation addressToLocation(String address) {
         long offset = Long.parseLong(address);
         // long size = -1;
-        for(ISegmentInformation section : sections) {
-            if(offset == section.getOffsetInFile()) {
-                /* size = */section.getSizeInFile();
+        for (ISegmentInformation section : sections) {
+            if (offset == section.getOffsetInFile()) {
+                /* size = */
+                section.getSizeInFile();
             }
         }
         return new FileInputLocation(offset);

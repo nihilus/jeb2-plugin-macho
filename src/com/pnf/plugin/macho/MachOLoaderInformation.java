@@ -18,8 +18,8 @@
 
 package com.pnf.plugin.macho;
 
-import com.pnf.plugin.macho.internal.ELF;
-import com.pnf.plugin.macho.internal.ELFFile;
+import com.pnf.plugin.macho.internal.MachO;
+import com.pnf.plugin.macho.internal.MachOFile;
 import com.pnfsoftware.jeb.core.units.codeobject.ILoaderInformation;
 import com.pnfsoftware.jeb.core.units.codeobject.ProcessorType;
 import com.pnfsoftware.jeb.core.units.codeobject.SubsystemType;
@@ -27,9 +27,9 @@ import com.pnfsoftware.jeb.util.io.Endianness;
 import com.pnfsoftware.jeb.util.logging.GlobalLog;
 import com.pnfsoftware.jeb.util.logging.ILogger;
 
-public class ELFLoaderInformation implements ILoaderInformation {
+public class MachOLoaderInformation implements ILoaderInformation {
     @SuppressWarnings("unused")
-    private static final ILogger logger = GlobalLog.getLogger(ELFLoaderInformation.class);
+    private static final ILogger logger = GlobalLog.getLogger(MachOLoaderInformation.class);
 
     public static int HAS_RELOCATIONS;
     public static int HAS_SYMBOLS;
@@ -45,32 +45,32 @@ public class ELFLoaderInformation implements ILoaderInformation {
     public boolean isLibrary;
     public boolean isLittleEndian;
 
-    public ELFLoaderInformation(ELFFile elf) {
+    public MachOLoaderInformation(MachOFile elf) {
 
         wordSize = elf.getWordSize();
         entryPoint = elf.getEntryPoint();
         flags = elf.getFlags();
         imageBase = elf.getImageBase();
         imageSize = elf.getImageSize();
-        isLibrary = (elf.getType() == ELF.ET_DYN);
+        isLibrary = (elf.getType() == MachO.ET_DYN);
         isLittleEndian = elf.isLittleEndian();
         switch(elf.getArch()) {
-        case ELF.EM_ARM:
+        case MachO.EM_ARM:
             if(wordSize == 32)
                 targetProcessor = ProcessorType.ARM;
             else if(wordSize == 64)
                 targetProcessor = ProcessorType.ARM64;
             break;
-        case ELF.EM_MIPS:
+        case MachO.EM_MIPS:
             if(wordSize == 32)
                 targetProcessor = ProcessorType.MIPS;
             else if(wordSize == 64)
                 targetProcessor = ProcessorType.MIPS64;
             break;
-        case ELF.EM_X86_64:
+        case MachO.EM_X86_64:
             targetProcessor = ProcessorType.X86_64;
             break;
-        case ELF.EM_386:
+        case MachO.EM_386:
             targetProcessor = ProcessorType.X86;
             break;
         default:

@@ -53,13 +53,13 @@ public class SectionHeader extends StreamReader {
 
         s_flags = readInt(stream);
         s_flags_s = "";
-        if((s_flags & 0x1) == ELF.SHF_WRITE)
+        if((s_flags & 0x1) == MachO.SHF_WRITE)
             s_flags_s += "WRITE ";
-        if((s_flags & 0x2) == ELF.SHF_ALLOC)
+        if((s_flags & 0x2) == MachO.SHF_ALLOC)
             s_flags_s += "ALLOC ";
-        if((s_flags & 0x4) == ELF.SHF_EXECINSTR)
+        if((s_flags & 0x4) == MachO.SHF_EXECINSTR)
             s_flags_s += "EXECINSTR ";
-        if((s_flags & 0xf0000000) == ELF.SHF_MASKPROC)
+        if((s_flags & 0xf0000000) == MachO.SHF_MASKPROC)
             s_flags_s += "MASKPROC ";
         s_addr = readInt(stream);
         s_offset = readInt(stream);
@@ -70,48 +70,48 @@ public class SectionHeader extends StreamReader {
         s_entsize = readInt(stream);
 
         switch(s_type) {
-        case ELF.SHT_NULL:
+        case MachO.SHT_NULL:
             section = null;
             break;
-        case ELF.SHT_SYMTAB:
+        case MachO.SHT_SYMTAB:
             section = new SymbolTableSection(data, s_size, s_offset, s_entsize, this.nameTable);
             break;
-        case ELF.SHT_STRTAB:
+        case MachO.SHT_STRTAB:
             section = new StringTableSection(data, s_size, s_offset);
             break;
-        case ELF.SHT_RELA:
+        case MachO.SHT_RELA:
             section = new RelocationSection(data, s_size, s_offset, s_entsize, true);
             break;
-        case ELF.SHT_REL:
+        case MachO.SHT_REL:
             section = new RelocationSection(data, s_size, s_offset, s_entsize, false);
             break;
-        case ELF.SHT_HASH:
+        case MachO.SHT_HASH:
             section = new HashTableSection(data, s_size, s_offset);
             break;
-        case ELF.SHT_NOTE:
+        case MachO.SHT_NOTE:
             section = new NoteSection(data, s_size, s_offset, s_entsize);
             break;
-        case ELF.SHT_NOBITS:
+        case MachO.SHT_NOBITS:
             section = null;
             break;
-        case ELF.SHT_DYNSYM:
+        case MachO.SHT_DYNSYM:
             section = new SymbolTableSection(data, s_size, s_offset, s_entsize, this.nameTable);
             break;
-        case ELF.SHT_DYNAMIC:
+        case MachO.SHT_DYNAMIC:
             section = new DynamicSection(data, s_size, s_offset, s_entsize);
             break;
-        case ELF.SHT_PROGBITS:
-        case ELF.SHT_SHLIB:
-        case ELF.SHT_LOPROC:
-        case ELF.SHT_HIPROC:
-        case ELF.SHT_LOUSER:
-        case ELF.SHT_HIUSER:
+        case MachO.SHT_PROGBITS:
+        case MachO.SHT_SHLIB:
+        case MachO.SHT_LOPROC:
+        case MachO.SHT_HIPROC:
+        case MachO.SHT_LOUSER:
+        case MachO.SHT_HIUSER:
             section = new Section(data, s_size, s_offset);
             break;
         default:
             section = new Section(data, s_size, s_offset);
         }
-        s_type_s = ELF.getSHTString(s_type);
+        s_type_s = MachO.getSHTString(s_type);
     }
 
     /**

@@ -47,10 +47,10 @@ public class SymbolTableEntry extends StreamReader {
         other = stream.read();
         sectionHeaderIndex = readShort(stream);
         bind = info >> 4;
-        bindString = ELF.getSTBString(bind);
+        bindString = MachO.getSTBString(bind);
 
         type = info & 0xf;
-        typeString = ELF.getSTTString(type);
+        typeString = MachO.getSTTString(type);
     }
 
     public void setName(StringTableSection nameTable) {

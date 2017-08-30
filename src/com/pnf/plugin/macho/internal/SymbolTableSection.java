@@ -58,7 +58,7 @@ public class SymbolTableSection extends Section {
     public HashMap<Integer, String> toHashMap() {
         HashMap<Integer, String> output = new HashMap<>();
         for(SymbolTableEntry entry : entries) {
-            if(entry.getType() == ELF.STT_FUNC)
+            if(entry.getType() == MachO.STT_FUNC)
                 output.put(entry.getValue(), entry.getName());
         }
         return output;

@@ -18,8 +18,7 @@
 
 package com.pnf.plugin.macho;
 
-import com.pnf.plugin.macho.ELFUnit;
-import com.pnf.plugin.macho.internal.ELF;
+import com.pnf.plugin.macho.internal.MachO;
 import com.pnfsoftware.jeb.core.IUnitCreator;
 import com.pnfsoftware.jeb.core.PluginInformation;
 import com.pnfsoftware.jeb.core.Version;
@@ -32,19 +31,19 @@ import com.pnfsoftware.jeb.core.units.WellKnownUnitTypes;
 import com.pnfsoftware.jeb.util.logging.GlobalLog;
 import com.pnfsoftware.jeb.util.logging.ILogger;
 
-public class ELFPlugin extends AbstractUnitIdentifier {
+public class MachOPlugin extends AbstractUnitIdentifier {
     @SuppressWarnings("unused")
-    private static final ILogger logger = GlobalLog.getLogger(ELFPlugin.class);
+    private static final ILogger logger = GlobalLog.getLogger(MachOPlugin.class);
 
-    public static final String TYPE = WellKnownUnitTypes.typeLinuxElf;
+    public static final String TYPE = WellKnownUnitTypes.typeAppleMacho;
 
-    public ELFPlugin() {
+    public MachOPlugin() {
         super(TYPE, 0);
     }
 
     @Override
     public PluginInformation getPluginInformation() {
-        return new PluginInformation("ELF File Unit", "Linux ELF parser plugin", "PNF Software", Version.create(1, 0, 1));
+        return new PluginInformation("Mach-O File Unit", "MacOS Mach-O parser plugin", "Markus Gothe", Version.create(0, 9, 9));
     }
 
     @Override
@@ -54,14 +53,14 @@ public class ELFPlugin extends AbstractUnitIdentifier {
 
     @Override
     public boolean canIdentify(IInput input, IUnitCreator parent) {
-        return checkBytes(input, 0, (int)ELF.ElfMagic[0], (int)ELF.ElfMagic[1], (int)ELF.ElfMagic[2], (int)ELF.ElfMagic[3]) &&
+        return checkBytes(input, 0, (int)MachO.ElfMagic[0], (int)MachO.ElfMagic[1], (int)MachO.ElfMagic[2], (int)MachO.ElfMagic[3]) &&
                 // Ensure a 32 bit elf file
                 checkBytes(input, 4, (byte)0x1);
     }
 
     @Override
     public IUnit prepare(String name, IInput input, IUnitProcessor unitProcessor, IUnitCreator parent) {
-        ELFUnit unit = new ELFUnit(name, input, unitProcessor, parent, pdm);
+        MachOUnit unit = new MachOUnit(name, input, unitProcessor, parent, pdm);
         unit.process();
         return unit;
     }

@@ -92,31 +92,31 @@ public class Header extends StreamReader {
         eiMag2 = (byte)stream.read();
         eiMag3 = (byte)stream.read();
 
-        if(!checkBytes(new byte[] { eiMag0, eiMag1, eiMag2, eiMag3 }, 0, ELF.ElfMagic))
+        if(!checkBytes(new byte[] { eiMag0, eiMag1, eiMag2, eiMag3 }, 0, MachO.ElfMagic))
             throw new IllegalArgumentException("Magic number does not match");
 
         eiClass = (byte)stream.read();
         if(eiClass == 0)
             throw new AssertionError("Invalid class");
-        eiClassString = ELF.getELFClassString(eiClass);
+        eiClassString = MachO.getELFClassString(eiClass);
 
         eiData = (byte)stream.read();
         switch(eiData) {
-        case ELF.ELFDATANONE:
+        case MachO.ELFDATANONE:
             throw new AssertionError("Invalid data format");
-        case ELF.ELFDATA2LSB:
+        case MachO.ELFDATA2LSB:
             endianness = ByteOrder.LITTLE_ENDIAN;
             break;
-        case ELF.ELFDATA2MSB:
+        case MachO.ELFDATA2MSB:
             endianness = ByteOrder.BIG_ENDIAN;
             break;
         default:
             break;
         }
-        eiDataString = ELF.getELFDataString(eiData);
+        eiDataString = MachO.getELFDataString(eiData);
 
         eiVersion = (byte)stream.read();
-        eiVersionString = ELF.getEVString(0);
+        eiVersionString = MachO.getEVString(0);
 
         eiOsabi = (byte)stream.read();
         eiAbiversion = (byte)stream.read();
@@ -126,11 +126,11 @@ public class Header extends StreamReader {
 
         /******* Read Header ******/
         eType = readShort(stream);
-        eTypeString = ELF.getETString(eType);
+        eTypeString = MachO.getETString(eType);
         eMachine = readShort(stream);
-        eMachineString = ELF.getEMString(eMachine);
+        eMachineString = MachO.getEMString(eMachine);
         eVersion = readInt(stream);
-        eVersionString = ELF.getEVString(eVersion);
+        eVersionString = MachO.getEVString(eVersion);
         eEntry = readInt(stream);
         ePhoff = readInt(stream);
         eShoff = readInt(stream);
@@ -259,7 +259,7 @@ public class Header extends StreamReader {
     }
 
     public String getVersionString() {
-        return ELF.getEVString(eiVersion);
+        return MachO.getEVString(eiVersion);
     }
 
     public int getVersion() {
@@ -267,7 +267,7 @@ public class Header extends StreamReader {
     }
 
     public String getOSABIString() {
-        return ELF.getOSABIString(eiOsabi);
+        return MachO.getOSABIString(eiOsabi);
     }
 
     public int getABIVersion() {
@@ -276,7 +276,7 @@ public class Header extends StreamReader {
 
     @Override
     public String toString() {
-        return "ELF File " + eTypeString + " " + eMachineString + " " + eVersionString + "\n\t" + eShnum + " sections";
+        return "Mach-O File " + eTypeString + " " + eMachineString + " " + eVersionString + "\n\t" + eShnum + " sections";
     }
 
 }

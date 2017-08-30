@@ -28,9 +28,9 @@ import com.pnfsoftware.jeb.util.logging.ILogger;
 /**
  * Wrapper for ELF Files
  */
-public class ELFFile {
+public class MachOFile {
     @SuppressWarnings("unused")
-    private static final ILogger logger = GlobalLog.getLogger(ELFFile.class);
+    private static final ILogger logger = GlobalLog.getLogger(MachOFile.class);
 
     private Header header;
 
@@ -53,7 +53,7 @@ public class ELFFile {
     private ProgramHeaderTable programHeaderTable;
     private List<Section> sections;
 
-    public ELFFile(byte[] data) {
+    public MachOFile(byte[] data) {
         notifications = new ArrayList<>();
         header = new Header(data);
 
@@ -88,7 +88,7 @@ public class ELFFile {
 
         for(ProgramHeader header : programHeaderTable.getHeaders()) {
             // Address of 0 indicates it is not in the memory image
-            if(header.getSizeInMemory() > 0 && header.getType() != ELF.SHT_NOBITS) {
+            if(header.getSizeInMemory() > 0 && header.getType() != MachO.SHT_NOBITS) {
                 System.arraycopy(data, header.getOffsetInFile(), image, header.getVirtualAddress() - minAddr, header.getSizeInFile());
             }
         }
@@ -116,7 +116,7 @@ public class ELFFile {
     }
 
     public boolean isLittleEndian() {
-        return header.getEIClass() == ELF.ELFDATA2LSB;
+        return header.getEIClass() == MachO.ELFDATA2LSB;
     }
 
     public long getEntryPoint() {
@@ -138,9 +138,9 @@ public class ELFFile {
 
     public int getWordSize() {
         switch(header.getData()) {
-        case ELF.ELFCLASS32:
+        case MachO.ELFCLASS32:
             return 32;
-        case ELF.ELFCLASS64:
+        case MachO.ELFCLASS64:
             return 64;
         default:
             // Means we don't know

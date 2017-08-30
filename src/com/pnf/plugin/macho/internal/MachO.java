@@ -21,7 +21,7 @@ package com.pnf.plugin.macho.internal;
 /**
  * Class to hold ELF constants.
  */
-public class ELF {
+public class MachO {
 
     // SHT (Section Header Type) constants
     public static final int SHT_NULL = 0;
@@ -165,11 +165,11 @@ public class ELF {
 
     public static String getELFClassString(int id) {
         switch(id) {
-        case ELF.ELFCLASSNONE:
+        case MachO.ELFCLASSNONE:
             return "ELFNONE";
-        case ELF.ELFCLASS32:
+        case MachO.ELFCLASS32:
             return "ELF32";
-        case ELF.ELFCLASS64:
+        case MachO.ELFCLASS64:
             return "ELF64";
         default:
             return Integer.toHexString(id);
@@ -185,11 +185,11 @@ public class ELF {
 
     public static String getELFDataString(int id) {
         switch(id) {
-        case ELF.ELFDATANONE:
+        case MachO.ELFDATANONE:
             return "NONE";
-        case ELF.ELFDATA2LSB:
+        case MachO.ELFDATA2LSB:
             return "2's complement, little endian";
-        case ELF.ELFDATA2MSB:
+        case MachO.ELFDATA2MSB:
             return "2's complement, big endian";
         default:
             return Integer.toHexString(id);
@@ -1092,15 +1092,15 @@ public class ELF {
 
     public static String getSTBString(int id) {
         switch(id) {
-        case ELF.STB_LOCAL:
+        case MachO.STB_LOCAL:
             return "LOCAL";
-        case ELF.STB_GLOBAL:
+        case MachO.STB_GLOBAL:
             return "GLOBAL";
-        case ELF.STB_WEAK:
+        case MachO.STB_WEAK:
             return "WEAK";
-        case ELF.STB_LOPROC:
+        case MachO.STB_LOPROC:
             return "LOPROC";
-        case ELF.STB_HIPROC:
+        case MachO.STB_HIPROC:
             return "HIPROC";
         default:
             return Integer.toHexString(id);
@@ -1118,19 +1118,19 @@ public class ELF {
 
     public static String getSTTString(int id) {
         switch(id) {
-        case ELF.STT_NOTYPE:
+        case MachO.STT_NOTYPE:
             return "NOTYPE";
-        case ELF.STT_OBJECT:
+        case MachO.STT_OBJECT:
             return "OBJECT";
-        case ELF.STT_FUNC:
+        case MachO.STT_FUNC:
             return "FUNC";
-        case ELF.STT_SECTION:
+        case MachO.STT_SECTION:
             return "SECTION";
-        case ELF.STT_FILE:
+        case MachO.STT_FILE:
             return "FILE";
-        case ELF.STT_LOPROC:
+        case MachO.STT_LOPROC:
             return "LOPROC";
-        case ELF.STT_HIPROC:
+        case MachO.STT_HIPROC:
             return "HIPROC";
         default:
             return Integer.toHexString(id);

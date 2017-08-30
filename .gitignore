@@ -13,3 +13,4 @@ build.xml
 .settings/
 /nbproject/private/
 /build/
+/dist/

@@ -59,7 +59,7 @@ public class SectionHeaderTable extends StreamReader {
         for(int sh_index = 0; sh_index < number; sh_index++) {
             header = new SectionHeader(data, entrySize, offset + sh_index * entrySize, names);
             entries.add(header);
-            if(header.getType() == ELF.SHT_RELA || header.getType() == ELF.SHT_REL) {
+            if(header.getType() == MachO.SHT_RELA || header.getType() == MachO.SHT_REL) {
                 relocations.add(header);
             }
         }
@@ -69,15 +69,15 @@ public class SectionHeaderTable extends StreamReader {
             if(header.getLink() > entries.size() || header.getLink() < 0) {
                 notifications.add(new UnitNotification(NotificationType.CORRUPTION, "sh_link points to a nonexistent section"));
             }
-            if(header.getType() == ELF.SHT_DYNSYM || header.getType() == ELF.SHT_SYMTAB) {
+            if(header.getType() == MachO.SHT_DYNSYM || header.getType() == MachO.SHT_SYMTAB) {
                 int strtabIndex = header.getLink();
                 nameTable = (StringTableSection)(entries.get(strtabIndex).getSection());
                 header.setNameTable(nameTable);
             }
-            if(header.getType() == ELF.SHT_REL || header.getType() == ELF.SHT_RELA) {
+            if(header.getType() == MachO.SHT_REL || header.getType() == MachO.SHT_RELA) {
                 ((RelocationSection)header.getSection()).setSymbolTable(entries.get(header.getLink()));
             }
-            if(header.getType() == ELF.SHT_DYNAMIC) {
+            if(header.getType() == MachO.SHT_DYNAMIC) {
                 ((DynamicSection)header.getSection()).setStringTable(entries.get(header.getLink()));
             }
         }

@@ -58,83 +58,83 @@ public class DynamicSectionEntry extends StreamReader {
         stream.mark(0);
 
         tag = readInt(stream);
-        tagString = ELF.getDT(tag);
+        tagString = MachO.getDT(tag);
         un = readInt(stream);
 
         switch(tag) {
-        case ELF.DT_NULL:
+        case MachO.DT_NULL:
             val = un;
             break;
-        case ELF.DT_NEEDED:
+        case MachO.DT_NEEDED:
             val = un;
             break;
-        case ELF.DT_PLTRELSZ:
+        case MachO.DT_PLTRELSZ:
             ptr = un;
             break;
-        case ELF.DT_PLTGOT:
+        case MachO.DT_PLTGOT:
             ptr = un;
             break;
-        case ELF.DT_HASH:
+        case MachO.DT_HASH:
             ptr = un;
             break;
-        case ELF.DT_STRTAB:
+        case MachO.DT_STRTAB:
             ptr = un;
             break;
-        case ELF.DT_SYMTAB:
+        case MachO.DT_SYMTAB:
             ptr = un;
             break;
-        case ELF.DT_RELA:
+        case MachO.DT_RELA:
             ptr = un;
             break;
-        case ELF.DT_RELASZ:
+        case MachO.DT_RELASZ:
             val = un;
             break;
-        case ELF.DT_RELAENT:
+        case MachO.DT_RELAENT:
             val = un;
             break;
-        case ELF.DT_STRSZ:
+        case MachO.DT_STRSZ:
             val = un;
             break;
-        case ELF.DT_SYMENT:
+        case MachO.DT_SYMENT:
             val = un;
             break;
-        case ELF.DT_INIT:
+        case MachO.DT_INIT:
             ptr = un;
             break;
-        case ELF.DT_FINI:
+        case MachO.DT_FINI:
             ptr = un;
             break;
-        case ELF.DT_SONAME:
+        case MachO.DT_SONAME:
             val = un;
             break;
-        case ELF.DT_RPATH:
+        case MachO.DT_RPATH:
             val = un;
             break;
-        case ELF.DT_SYMBOLIC:
+        case MachO.DT_SYMBOLIC:
             break;
-        case ELF.DT_REL:
+        case MachO.DT_REL:
             ptr = un;
             break;
-        case ELF.DT_RELSZ:
+        case MachO.DT_RELSZ:
             val = un;
             break;
-        case ELF.DT_RELENT:
+        case MachO.DT_RELENT:
             val = un;
             break;
-        case ELF.DT_PLTREL:
+        case MachO.DT_PLTREL:
             val = un;
             break;
-        case ELF.DT_DEBUG:
+        case MachO.DT_DEBUG:
             ptr = un;
             break;
-        case ELF.DT_TEXTREL:
+        case MachO.DT_TEXTREL:
             break;
-        case ELF.DT_JMPREL:
+        case MachO.DT_JMPREL:
             ptr = un;
             break;
-        case ELF.DT_LOPROC:
+        case MachO.DT_LOPROC:
             break;
-        case ELF.DT_HIPROC:
+        case MachO.DT_HIPROC:
             break;
         default:
             break;
@@ -143,9 +143,9 @@ public class DynamicSectionEntry extends StreamReader {
 
     public void setStringTable(SectionHeader stringTable) {
         switch(tag) {
-        case ELF.DT_NEEDED:
-        case ELF.DT_SONAME:
-        case ELF.DT_RPATH:
+        case MachO.DT_NEEDED:
+        case MachO.DT_SONAME:
+        case MachO.DT_RPATH:
             if(stringTable.getSection() instanceof StringTableSection) {
                 valString = ((StringTableSection)stringTable.getSection()).getString(val);
                 break;

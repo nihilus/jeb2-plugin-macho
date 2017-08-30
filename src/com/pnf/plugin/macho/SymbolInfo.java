@@ -21,7 +21,7 @@ package com.pnf.plugin.macho;
 import com.pnfsoftware.jeb.core.units.codeobject.ISymbolInformation;
 import com.pnfsoftware.jeb.core.units.codeobject.SymbolType;
 
-import static com.pnf.plugin.macho.internal.ELF.*;
+import static com.pnf.plugin.macho.internal.MachO.*;
 
 public class SymbolInfo implements ISymbolInformation {
 

@@ -92,14 +92,14 @@ public class ProgramHeader extends StreamReader {
         flags = readInt(stream);
 
         flagsString = "";
-        flagsString = String.format("%c%c%c", (flags & ELF.PF_X) != 0 ? 'E' : ' ', (flags & ELF.PF_W) != 0 ? 'W' : ' ',
-                (flags & ELF.PF_R) != 0 ? 'R' : ' ');
+        flagsString = String.format("%c%c%c", (flags & MachO.PF_X) != 0 ? 'E' : ' ', (flags & MachO.PF_W) != 0 ? 'W' : ' ',
+                (flags & MachO.PF_R) != 0 ? 'R' : ' ');
 
         align = readInt(stream);
 
-        typeString = ELF.getPTString(type);
+        typeString = MachO.getPTString(type);
 
-        if(type == ELF.PT_GNU_STACK && (flags & ELF.PF_X) != 0) {
+        if(type == MachO.PT_GNU_STACK && (flags & MachO.PF_X) != 0) {
             notifications.add(new UnitNotification(NotificationType.AREA_OF_INTEREST, "Stack is executable"));
         }
     }

@@ -18,16 +18,16 @@
 
 package com.pnf.plugin.macho;
 
-import com.pnf.plugin.macho.internal.ELF;
+import com.pnf.plugin.macho.internal.MachO;
 import com.pnf.plugin.macho.internal.ProgramHeader;
 import com.pnf.plugin.macho.internal.SectionHeader;
 import com.pnfsoftware.jeb.core.units.codeobject.ISegmentInformation;
 import com.pnfsoftware.jeb.util.logging.GlobalLog;
 import com.pnfsoftware.jeb.util.logging.ILogger;
 
-public class ELFSectionInfo implements ISegmentInformation {
+public class MachOSectionInfo implements ISegmentInformation {
     @SuppressWarnings("unused")
-    private static final ILogger logger = GlobalLog.getLogger(ELFSectionInfo.class);
+    private static final ILogger logger = GlobalLog.getLogger(MachOSectionInfo.class);
 
     private String name;
     private int flags;
@@ -36,14 +36,14 @@ public class ELFSectionInfo implements ISegmentInformation {
     private long fileSize;
     private long memSize;
 
-    public ELFSectionInfo(SectionHeader elfsection) {
+    public MachOSectionInfo(SectionHeader elfsection) {
         name = elfsection.getName();
         int elfFlags = elfsection.getFlags();
-        this.flags = ((elfFlags & ELF.SHF_EXECINSTR) != 0 ? FLAG_EXECUTE : 0) | ((elfFlags & ELF.SHF_ALLOC) != 0 ? FLAG_READ : 0)
-                | ((elfFlags & ELF.SHF_WRITE) != 0 ? FLAG_WRITE : 0);
+        this.flags = ((elfFlags & MachO.SHF_EXECINSTR) != 0 ? FLAG_EXECUTE : 0) | ((elfFlags & MachO.SHF_ALLOC) != 0 ? FLAG_READ : 0)
+                | ((elfFlags & MachO.SHF_WRITE) != 0 ? FLAG_WRITE : 0);
         fileOffset = elfsection.getOffset();
         memOffset = elfsection.getAddress();
-        if(elfsection.getType() == ELF.SHT_NOBITS) {
+        if(elfsection.getType() == MachO.SHT_NOBITS) {
             fileSize = 0;
             memSize = elfsection.getSize();
         }
@@ -53,11 +53,11 @@ public class ELFSectionInfo implements ISegmentInformation {
         }
     }
 
-    public ELFSectionInfo(ProgramHeader elfsection) {
+    public MachOSectionInfo(ProgramHeader elfsection) {
         name = "";
         int elfFlags = elfsection.getFlags();
-        this.flags = ((elfFlags & ELF.PF_X) != 0 ? FLAG_EXECUTE : 0) | ((elfFlags & ELF.PF_R) != 0 ? FLAG_READ : 0)
-                | ((elfFlags & ELF.PF_W) != 0 ? FLAG_WRITE : 0);
+        this.flags = ((elfFlags & MachO.PF_X) != 0 ? FLAG_EXECUTE : 0) | ((elfFlags & MachO.PF_R) != 0 ? FLAG_READ : 0)
+                | ((elfFlags & MachO.PF_W) != 0 ? FLAG_WRITE : 0);
         fileOffset = elfsection.getOffsetInFile();
         memOffset = elfsection.getVirtualAddress();
         fileSize = elfsection.getSizeInFile();
