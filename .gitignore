@@ -1,0 +1,13 @@
+.DS_STORE
+
+bin/
+out/
+libs/
+testfiles/
+
+build.xml
+
+.*.sw*
+.classpath
+.project
+.settings/
