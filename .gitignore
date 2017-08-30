@@ -11,3 +11,5 @@ build.xml
 .classpath
 .project
 .settings/
+/nbproject/private/
+/build/
