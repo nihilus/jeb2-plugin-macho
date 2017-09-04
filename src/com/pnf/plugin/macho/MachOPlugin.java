@@ -28,13 +28,19 @@ import com.pnfsoftware.jeb.core.units.AbstractUnitIdentifier;
 import com.pnfsoftware.jeb.core.units.IUnit;
 import com.pnfsoftware.jeb.core.units.IUnitProcessor;
 import com.pnfsoftware.jeb.core.units.WellKnownUnitTypes;
+import static com.pnfsoftware.jeb.util.collect.ArrayUtil.swap;
 import com.pnfsoftware.jeb.util.logging.GlobalLog;
 import com.pnfsoftware.jeb.util.logging.ILogger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Arrays;
+
+
 
 public class MachOPlugin extends AbstractUnitIdentifier {
     @SuppressWarnings("unused")
     private static final ILogger logger = GlobalLog.getLogger(MachOPlugin.class);
-
+    
     public static final String TYPE = WellKnownUnitTypes.typeAppleMacho;
 
     public MachOPlugin() {
@@ -53,9 +59,12 @@ public class MachOPlugin extends AbstractUnitIdentifier {
 
     @Override
     public boolean canIdentify(IInput input, IUnitCreator parent) {
-        return checkBytes(input, 0, (int)MachO.ElfMagic[0], (int)MachO.ElfMagic[1], (int)MachO.ElfMagic[2], (int)MachO.ElfMagic[3]) &&
-                // Ensure a 32 bit elf file
-                checkBytes(input, 4, (byte)0x1);
+        ByteBuffer magicbf = ByteBuffer.allocate(4);
+        magicbf.putInt(MachO.MH_MAGIC);
+        int magic;
+        magic = magicbf.getInt();
+        logger.info("%s", magic);
+        return (checkBytes(input, 0, magic) /*|| checkBytes(input, 0, magic64)*/);
     }
 
     @Override

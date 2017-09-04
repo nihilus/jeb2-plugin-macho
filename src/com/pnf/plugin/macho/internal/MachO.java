@@ -18,6 +18,8 @@
 
 package com.pnf.plugin.macho.internal;
 
+import java.nio.ByteBuffer;
+
 /**
  * Class to hold ELF constants.
  */
@@ -48,6 +50,9 @@ public class MachO {
     public static final int SHT_LOUSER = 0x80000000;
     public static final int SHT_HIUSER = 0xffffffff;
 
+    public static final int MH_MAGIC = 0xfeedface;
+    public static final int MH_MAGIC64 = 0xfeedfacf;
+        
     public static String getSHTString(int id) {
         switch(id) {
         case SHT_NULL:
