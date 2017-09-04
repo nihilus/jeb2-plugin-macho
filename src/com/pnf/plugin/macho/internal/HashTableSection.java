@@ -31,11 +31,13 @@ public class HashTableSection extends Section {
         numChain = readInt(stream);
 
         buckets = new int[numBuckets];
-        for(int index = 0; index < numBuckets; index++)
+        for(int index = 0; index < numBuckets; index++) {
             buckets[index] = readInt(stream);
+        }
         chains = new int[numChain];
-        for(int index = 0; index < numChain; index++)
+        for(int index = 0; index < numChain; index++) {
             chains[index] = readInt(stream);
+        }
     }
 
     public int getBucket(int index) {

@@ -52,7 +52,8 @@ public class MachO {
 
     public static final int MH_MAGIC = 0xfeedface;
     public static final int MH_MAGIC64 = 0xfeedfacf;
-        
+    public static final int FAT_MAGIC = 0xcafebabe; /* This indicates a FAT Mach-O archive! */
+  
     public static String getSHTString(int id) {
         switch(id) {
         case SHT_NULL:
@@ -158,24 +159,6 @@ public class MachO {
             return "MASKPROC";
         default:
             return null;
-        }
-    }
-
-    // Elf class constants
-    public static final byte ELFCLASSNONE = 0;
-    public static final byte ELFCLASS32 = 1;
-    public static final byte ELFCLASS64 = 2;
-
-    public static String getELFClassString(int id) {
-        switch(id) {
-        case MachO.ELFCLASSNONE:
-            return "ELFNONE";
-        case MachO.ELFCLASS32:
-            return "ELF32";
-        case MachO.ELFCLASS64:
-            return "ELF64";
-        default:
-            return Integer.toHexString(id);
         }
     }
 

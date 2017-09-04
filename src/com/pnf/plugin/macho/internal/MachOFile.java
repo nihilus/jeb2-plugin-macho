@@ -24,6 +24,7 @@ import java.util.List;
 import com.pnfsoftware.jeb.core.units.UnitNotification;
 import com.pnfsoftware.jeb.util.logging.GlobalLog;
 import com.pnfsoftware.jeb.util.logging.ILogger;
+import java.nio.ByteOrder;
 
 /**
  * Wrapper for ELF Files
@@ -57,8 +58,7 @@ public class MachOFile {
         notifications = new ArrayList<>();
         header = new Header(data);
 
-        sectionHeaderTable = new SectionHeaderTable(data, header.getShoff(), header.getSHEntrySize(), header.getSHNumber(),
-                header.getSHStringIndex(), notifications);
+        sectionHeaderTable = new SectionHeaderTable(data, header.getShoff(), header.getSHEntrySize(), header.getSHNumber(), header.getSHStringIndex(), notifications);
 
         sections = sectionHeaderTable.getSections();
 
@@ -116,7 +116,7 @@ public class MachOFile {
     }
 
     public boolean isLittleEndian() {
-        return header.getEIClass() == MachO.ELFDATA2LSB;
+        return (header.getEndian() == ByteOrder.LITTLE_ENDIAN);
     }
 
     public long getEntryPoint() {
@@ -137,16 +137,7 @@ public class MachOFile {
     }
 
     public int getWordSize() {
-        switch(header.getData()) {
-        case MachO.ELFCLASS32:
-            return 32;
-        case MachO.ELFCLASS64:
-            return 64;
-        default:
-            // Means we don't know
-            // Need to ask the user
-            return -1;
-        }
+        return header.getWordsize();
     }
 
     public int getFlags() {

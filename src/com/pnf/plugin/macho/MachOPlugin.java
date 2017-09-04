@@ -57,8 +57,8 @@ public class MachOPlugin extends AbstractUnitIdentifier {
 
     @Override
     public boolean canIdentify(IInput input, IUnitCreator parent) {
-        ByteBuffer magicbf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(MachO.MH_MAGIC);
-        ByteBuffer magic64bf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(MachO.MH_MAGIC64);
+        ByteBuffer magicbf = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(MachO.MH_MAGIC);
+        ByteBuffer magic64bf = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(MachO.MH_MAGIC64);
 
         return (checkBytes(input, 0, magicbf.order(ByteOrder.LITTLE_ENDIAN).getInt(0)) || checkBytes(input, 0, magic64bf.order(ByteOrder.LITTLE_ENDIAN).getInt(0)) || checkBytes(input, 0, magicbf.order(ByteOrder.BIG_ENDIAN).getInt(0)) || checkBytes(input, 0, magic64bf.order(ByteOrder.BIG_ENDIAN).getInt(0)));
     }

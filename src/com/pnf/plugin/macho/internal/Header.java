@@ -28,13 +28,11 @@ public class Header extends StreamReader {
     private int start;
     private int end;
     private int identSize; // size of identification struct
-    private byte moMag0;
-    private byte moMag1;
-    private byte moMag2;
-    private byte moMag3;
-    private byte eiClass;
+    private final byte moMag0;
+    private final byte moMag1;
+    private final byte moMag2;
+    private final byte moMag3;
     private String eiClassString;
-    private byte eiData;
     private String eiDataString;
     private byte eiVersion;
     private String eiVersionString;
@@ -63,49 +61,40 @@ public class Header extends StreamReader {
     private int nameSectionHeaderStart;
     private int nameSectionStart;
 
-    // ELF Header
-    // Bytes: name
-    // 0-3 : ei_mag0 - ei_mag3
-    // 4 : ei_class
-    // 5 : ei_data
-    // 6 : ei_version
-    // 7 : ei_osabi
-    // 8-15 : ei_pad
-    // 16-17: e_type
-    // 18-19: e_machine
-    // 20-23: e_version
-    // 24-27: e_entry
-    // 28-31: e_phoff
-    // 32-35: e_shoff
-    // 36-39: e_flags
-    // 40-41: e_ehsize (size of ELF header in bytes)
-    // 42-43: e_phentsize (size of program file header entry) *
-    // 44-45: e_phnum (number of program header entries) *
-    // 46-47: e_shentsize (size of section header table entry) *
-    // 48-49: e_shnum (number of section header entries) *
-    // 50-51: e_shstrndx (location of string table for section header table)
+    private final int wordsize;
+    private final ByteOrder endian;
+    
     public Header(byte[] data) {
         ByteArrayInputStream stream = new ByteArrayInputStream(data);
-        /******* Read Ident Struct ******/
+
         moMag0 = (byte)stream.read();
         moMag1 = (byte)stream.read();
         moMag2 = (byte)stream.read();
         moMag3 = (byte)stream.read();
         byte[] Magic = new byte[] { moMag0, moMag1, moMag2, moMag3 };
         
-        ByteBuffer magicbf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(MachO.MH_MAGIC);
-        ByteBuffer magic64bf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(MachO.MH_MAGIC64);
-        magicbf.rewind();
-        magic64bf.rewind();
+        ByteBuffer magicbf = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(MachO.MH_MAGIC);
+        ByteBuffer magic64bf = ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(MachO.MH_MAGIC64);
         
         if(checkBytes(Magic, 0, magicbf.order(ByteOrder.LITTLE_ENDIAN).array()) || checkBytes(Magic, 0, magic64bf.order(ByteOrder.LITTLE_ENDIAN).array())){
-            endianness = ByteOrder.LITTLE_ENDIAN;
+            endian = endianness = ByteOrder.LITTLE_ENDIAN;
         } else if(checkBytes(Magic, 0, magicbf.order(ByteOrder.BIG_ENDIAN).array()) || checkBytes(Magic, 0, magic64bf.order(ByteOrder.BIG_ENDIAN).array())){
-            endianness = ByteOrder.BIG_ENDIAN;
+            endian = endianness = ByteOrder.BIG_ENDIAN;
         } else 
             throw new IllegalArgumentException("Magic number does not match");
+    
+        if(checkBytes(Magic, 0, magicbf.order(ByteOrder.LITTLE_ENDIAN).array()) || checkBytes(Magic, 0, magicbf.order(ByteOrder.BIG_ENDIAN).array())){
+             wordsize = 32;           
+        } else {
+            wordsize = 64;
+        }    
+    }
+   
+    public ByteOrder getEndian() {
+        return endian;
     }
 
+    
     public int getStart() {
         return this.start;
     }
@@ -118,16 +107,8 @@ public class Header extends StreamReader {
         return identSize;
     }
 
-    public byte getEIClass() {
-        return eiClass;
-    }
-
     public String getClassString() {
         return eiClassString;
-    }
-
-    public byte getData() {
-        return eiData;
     }
 
     public String getDataString() {
@@ -238,6 +219,18 @@ public class Header extends StreamReader {
     @Override
     public String toString() {
         return "Mach-O File " + eTypeString + " " + eMachineString + " " + eVersionString + "\n\t" + eShnum + " sections";
+    }
+
+    public int getWordsize() {
+        switch(wordsize){
+            case 32:
+            case 64:
+                return wordsize;
+            default:
+                // Means that we don't know
+                // Need to ask the user
+                return -1;
+        }
     }
 
 }
