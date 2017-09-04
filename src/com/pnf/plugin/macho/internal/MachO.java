@@ -161,8 +161,6 @@ public class MachO {
         }
     }
 
-    public static byte[] ElfMagic = { (byte)0x7F, 'E', 'L', 'F' };
-
     // Elf class constants
     public static final byte ELFCLASSNONE = 0;
     public static final byte ELFCLASS32 = 1;

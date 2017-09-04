@@ -28,12 +28,10 @@ import com.pnfsoftware.jeb.core.units.AbstractUnitIdentifier;
 import com.pnfsoftware.jeb.core.units.IUnit;
 import com.pnfsoftware.jeb.core.units.IUnitProcessor;
 import com.pnfsoftware.jeb.core.units.WellKnownUnitTypes;
-import static com.pnfsoftware.jeb.util.collect.ArrayUtil.swap;
 import com.pnfsoftware.jeb.util.logging.GlobalLog;
 import com.pnfsoftware.jeb.util.logging.ILogger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 
 
@@ -59,12 +57,10 @@ public class MachOPlugin extends AbstractUnitIdentifier {
 
     @Override
     public boolean canIdentify(IInput input, IUnitCreator parent) {
-        ByteBuffer magicbf = ByteBuffer.allocate(4);
-        magicbf.putInt(MachO.MH_MAGIC);
-        int magic;
-        magic = magicbf.getInt();
-        logger.info("%s", magic);
-        return (checkBytes(input, 0, magic) /*|| checkBytes(input, 0, magic64)*/);
+        ByteBuffer magicbf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(MachO.MH_MAGIC);
+        ByteBuffer magic64bf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(MachO.MH_MAGIC64);
+
+        return (checkBytes(input, 0, magicbf.order(ByteOrder.LITTLE_ENDIAN).getInt(0)) || checkBytes(input, 0, magic64bf.order(ByteOrder.LITTLE_ENDIAN).getInt(0)) || checkBytes(input, 0, magicbf.order(ByteOrder.BIG_ENDIAN).getInt(0)) || checkBytes(input, 0, magic64bf.order(ByteOrder.BIG_ENDIAN).getInt(0)));
     }
 
     @Override

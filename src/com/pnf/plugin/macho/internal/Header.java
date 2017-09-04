@@ -28,10 +28,10 @@ public class Header extends StreamReader {
     private int start;
     private int end;
     private int identSize; // size of identification struct
-    private byte eiMag0;
-    private byte eiMag1;
-    private byte eiMag2;
-    private byte eiMag3;
+    private byte moMag0;
+    private byte moMag1;
+    private byte moMag2;
+    private byte moMag3;
     private byte eiClass;
     private String eiClassString;
     private byte eiData;
@@ -87,62 +87,23 @@ public class Header extends StreamReader {
     public Header(byte[] data) {
         ByteArrayInputStream stream = new ByteArrayInputStream(data);
         /******* Read Ident Struct ******/
-        eiMag0 = (byte)stream.read();
-        eiMag1 = (byte)stream.read();
-        eiMag2 = (byte)stream.read();
-        eiMag3 = (byte)stream.read();
-
-        if(!checkBytes(new byte[] { eiMag0, eiMag1, eiMag2, eiMag3 }, 0, MachO.ElfMagic))
-            throw new IllegalArgumentException("Magic number does not match");
-
-        eiClass = (byte)stream.read();
-        if(eiClass == 0)
-            throw new AssertionError("Invalid class");
-        eiClassString = MachO.getELFClassString(eiClass);
-
-        eiData = (byte)stream.read();
-        switch(eiData) {
-        case MachO.ELFDATANONE:
-            throw new AssertionError("Invalid data format");
-        case MachO.ELFDATA2LSB:
+        moMag0 = (byte)stream.read();
+        moMag1 = (byte)stream.read();
+        moMag2 = (byte)stream.read();
+        moMag3 = (byte)stream.read();
+        byte[] Magic = new byte[] { moMag0, moMag1, moMag2, moMag3 };
+        
+        ByteBuffer magicbf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(MachO.MH_MAGIC);
+        ByteBuffer magic64bf = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(MachO.MH_MAGIC64);
+        magicbf.rewind();
+        magic64bf.rewind();
+        
+        if(checkBytes(Magic, 0, magicbf.order(ByteOrder.LITTLE_ENDIAN).array()) || checkBytes(Magic, 0, magic64bf.order(ByteOrder.LITTLE_ENDIAN).array())){
             endianness = ByteOrder.LITTLE_ENDIAN;
-            break;
-        case MachO.ELFDATA2MSB:
+        } else if(checkBytes(Magic, 0, magicbf.order(ByteOrder.BIG_ENDIAN).array()) || checkBytes(Magic, 0, magic64bf.order(ByteOrder.BIG_ENDIAN).array())){
             endianness = ByteOrder.BIG_ENDIAN;
-            break;
-        default:
-            break;
-        }
-        eiDataString = MachO.getELFDataString(eiData);
-
-        eiVersion = (byte)stream.read();
-        eiVersionString = MachO.getEVString(0);
-
-        eiOsabi = (byte)stream.read();
-        eiAbiversion = (byte)stream.read();
-
-        stream.skip(7);
-        /******* Done Ident Struct ******/
-
-        /******* Read Header ******/
-        eType = readShort(stream);
-        eTypeString = MachO.getETString(eType);
-        eMachine = readShort(stream);
-        eMachineString = MachO.getEMString(eMachine);
-        eVersion = readInt(stream);
-        eVersionString = MachO.getEVString(eVersion);
-        eEntry = readInt(stream);
-        ePhoff = readInt(stream);
-        eShoff = readInt(stream);
-        eFlags = readInt(stream);
-        eEhsize = readShort(stream);
-        ePhentSize = readShort(stream);
-        ePhnum = readShort(stream);
-        eShentSize = readShort(stream);
-        eShnum = readShort(stream);
-        eShstrndx = readShort(stream);
-        /******* Done header ******/
-
+        } else 
+            throw new IllegalArgumentException("Magic number does not match");
     }
 
     public int getStart() {
@@ -246,15 +207,15 @@ public class Header extends StreamReader {
     }
 
     public int getMagic() {
-        return ByteBuffer.allocate(4).put(eiMag0).put(eiMag1).put(eiMag2).put(eiMag3).getInt(0);
+        return ByteBuffer.allocate(4).put(moMag0).put(moMag1).put(moMag2).put(moMag3).getInt(0);
     }
 
     public String getMagicString() {
         StringBuilder magic = new StringBuilder();
-        magic.append(String.format("%x ", eiMag0));
-        magic.append(String.format("%x ", eiMag1));
-        magic.append(String.format("%x ", eiMag2));
-        magic.append(String.format("%x", eiMag3));
+        magic.append(String.format("%x ", moMag0));
+        magic.append(String.format("%x ", moMag1));
+        magic.append(String.format("%x ", moMag2));
+        magic.append(String.format("%x", moMag3));
         return magic.toString();
     }
 
